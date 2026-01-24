@@ -3,10 +3,43 @@ import React, { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Mail, Lock, User, ArrowRight, Github, Chrome } from "lucide-react"
 import Link from "next/link"
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true)
 
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  })
+
+  // create user
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    })
+  }
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    try {
+      const response = await fetch("http://localhost:5000/api/v1/user/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      })
+
+      console.log(JSON.stringify(response))
+    } catch (error) {
+      console.error("Error:", error)
+      alert("Something went wrong!")
+    }
+  }
   return (
     <div className="min-h-screen bg-[#F9F6F2] flex items-center justify-center p-6 pt-32 pb-20">
       <motion.div
@@ -61,7 +94,10 @@ const AuthPage = () => {
             </p>
           </div>
 
-          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+          <form
+            className="space-y-5"
+            onSubmit={isLogin ? undefined : handleRegister}
+          >
             <AnimatePresence mode="wait">
               {!isLogin && (
                 <motion.div
@@ -75,6 +111,9 @@ const AuthPage = () => {
                     size={18}
                   />
                   <input
+                    name="name" // ৩. 'name' প্রপার্টি অবশ্যই থাকতে হবে
+                    value={formData.name}
+                    onChange={handleChange}
                     type="text"
                     placeholder="Full Name"
                     className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-orange-600/20 focus:border-orange-600 transition-all"
@@ -90,6 +129,9 @@ const AuthPage = () => {
               />
               <input
                 type="email"
+                value={formData.email}
+                onChange={handleChange}
+                name="email"
                 placeholder="Email Address"
                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-orange-600/20 focus:border-orange-600 transition-all"
               />
@@ -101,7 +143,10 @@ const AuthPage = () => {
                 size={18}
               />
               <input
+                name="password"
                 type="password"
+                value={formData.password}
+                onChange={handleChange}
                 placeholder="Password"
                 className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-orange-600/20 focus:border-orange-600 transition-all"
               />

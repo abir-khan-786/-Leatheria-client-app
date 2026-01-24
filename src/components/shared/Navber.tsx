@@ -62,6 +62,12 @@ const Navbar = () => {
             >
               Our Story
             </Link>
+            <Link
+              href="/dashboard"
+              className="text-sm font-medium text-gray-700 hover:text-orange-600 transition"
+            >
+             Dashboard
+            </Link>
           </div>
 
           {/* ৩. আইকন সেকশন (ডানদিকে) */}
@@ -70,7 +76,7 @@ const Navbar = () => {
               <Search size={20} />
             </button>
             <Link
-              href="/account"
+              href="/auth"
               className="hidden sm:block p-2 text-gray-700 hover:bg-gray-100 rounded-full transition"
             >
               <User size={20} />
@@ -121,7 +127,7 @@ const Navbar = () => {
               Backpacks
             </Link>
             <Link
-              href="/account"
+              href="/auth"
               className="block px-3 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
             >
               My Profile
