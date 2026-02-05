@@ -5,11 +5,15 @@ import { PrismaClient } from "@prisma/client"
 import { prismaAdapter } from "better-auth/adapters/prisma"
 
 const connectionString = `${process.env.DATABASE_URL}`
-
+const globalForPrisma = global as unknown as { prisma: PrismaClient }
 const pool = new pg.Pool({ connectionString })
 
 const adapter = new PrismaPg(pool)
 
-const prisma = new PrismaClient({ adapter })
+export const prisma =
+  globalForPrisma.prisma ||
+  new PrismaClient({
+    log: ["query"],
+  })
 
-export { prisma }
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
