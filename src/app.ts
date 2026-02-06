@@ -1,8 +1,8 @@
 import express from "express"
 import "dotenv/config"
 import cors from "cors"
-import { userRoute } from "./modules/user/user.route"
-import { authRoute } from "./modules/auth/auth.route"
+import { userRoute } from "./modules/user/user.route.js"
+import { authRoute } from "./modules/auth/auth.route.js"
 
 const app = express()
 // ১. সবার আগে CORS কনফিগারেশন থাকতে হবে (শুধু একবার)

@@ -1,5 +1,6 @@
 import "dotenv/config"
-import pg from "pg"
+import pkg from "pg" // ডিফল্ট ইম্পোর্ট হিসেবে pkg নিন
+const { Pool } = pkg // সেখান থেকে Pool বের করে আনুন
 import { PrismaPg } from "@prisma/adapter-pg"
 import { PrismaClient } from "@prisma/client"
 
@@ -7,19 +8,18 @@ const connectionString = process.env.DATABASE_URL
 
 const globalForPrisma = global as unknown as {
   prisma: PrismaClient
-  pgPool: pg.Pool
+  pgPool: pkg.Pool
 }
 
-// ১. পুল তৈরি করুন (একবারই তৈরি হবে)
-const pool = globalForPrisma.pgPool || new pg.Pool({ connectionString })
+// একবারই পুল তৈরি হবে
+const pool = globalForPrisma.pgPool || new Pool({ connectionString })
 const adapter = new PrismaPg(pool)
 
-// ২. PrismaClient ইনিশিয়ালাইজ করুন
 export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({
     adapter: adapter,
-    log: ["error"], // প্রোডাকশনে শুধু এরর লগ দেখুন
+    log: ["error"],
   })
 
 if (process.env.NODE_ENV !== "production") {
