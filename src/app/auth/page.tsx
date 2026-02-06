@@ -1,189 +1,238 @@
 "use client"
 import React, { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Mail, Lock, User, ArrowRight, Github, Chrome } from "lucide-react"
+import {
+  Mail,
+  Lock,
+  User,
+  ArrowRight,
+  Chrome,
+  ShieldCheck,
+  Outdent,
+  Home,
+} from "lucide-react"
 import Link from "next/link"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { redirect, useRouter, useSearchParams } from "next/navigation"
+import axios from "axios"
+import useSWR from "swr"
+import toast, { Toaster } from "react-hot-toast"
+import { authClient } from "@/components/lib/auth"
 
 const AuthPage = () => {
+  const router = useRouter()
   const [isLogin, setIsLogin] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
   })
-
-  // create user
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get("callbackUrl") || "/"
+  // Google Login
+  const handleGoogleLogin = async () => {
+    const data = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "http://localhost:3000",
     })
   }
-  const handleRegister = async (e: React.FormEvent) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
 
     try {
-      const response = await fetch("http://localhost:5000/api/v1/user/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      })
+      if (isLogin) {
+        // --- LOGIN LOGIC ---
+        const { data, error } = await authClient.signIn.email({
+          email: formData.email,
+          password: formData.password,
+        })
+        // console.log(data?.user.email)
 
-      console.log(JSON.stringify(response))
-    } catch (error) {
-      console.error("Error:", error)
-      alert("Something went wrong!")
+        if (error) {
+          toast.error(error.message || "Invalid credentials")
+        } else {
+          toast.success("Welcome back!")
+          router.refresh()
+          router.push(callbackUrl)
+        }
+      } else {
+        // --- SIGN UP LOGIC ---
+
+        const { data, error } = await authClient.signUp.email({
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+        })
+
+        if (error) {
+          toast.error(error.message || "Registration failed")
+        } else {
+          toast.success("Verification email sent! Please check your inbox.")
+          setIsLogin(true) // রেজিস্ট্রেশন শেষে লগইন মোডে নিয়ে যাবে
+        }
+      }
+    } catch (err) {
+      toast.error("Something went wrong. Please try again.")
+    } finally {
+      setLoading(false)
     }
   }
+
   return (
-    <div className="min-h-screen bg-[#F9F6F2] flex items-center justify-center p-6 pt-32 pb-20">
+    <div className="min-h-screen bg-[#FDFCFB] flex items-center justify-center p-4 md:p-6">
+      {/* Toaster যোগ করা হয়েছে */}
+      <Toaster position="top-center" />
+
       <motion.div
-        layout
-        className="bg-white w-full max-w-[1000px] rounded-2xl shadow-xl overflow-hidden flex flex-col md:flex-row min-h-[600px]"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white w-full max-w-[1000px] rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.05)] overflow-hidden flex flex-col md:flex-row min-h-[600px] border border-gray-100"
       >
-        {/* বাম পাশ: ইমেজ এবং টেক্সট (ডেক্সটপে দেখাবে) */}
-        <div className="hidden md:flex md:w-1/2 bg-gray-900 relative p-12 flex-col justify-between text-white">
+        {/* Left Side: Brand */}
+        <div className="hidden md:flex md:w-[40%] bg-gray-900 relative p-12 flex-col justify-between text-white">
           <div className="absolute inset-0 opacity-40">
             <img
-              src="https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=1938"
+              src="https://images.unsplash.com/photo-1554048612-b6a482bc67e5?q=80&w=2070"
               className="w-full h-full object-cover"
-              alt="Leather background"
+              alt="Luxury"
             />
+            <div className="absolute inset-0 bg-gradient-to-b from-gray-900/40 to-gray-900" />
           </div>
           <div className="relative z-10">
             <Link
               href="/"
-              className="text-2xl font-serif font-black tracking-widest"
+              className="text-xl font-serif font-black tracking-widest flex items-center gap-2"
             >
-              LEATHERIA
+              <ShieldCheck className="text-orange-500" /> LEATHERIA
             </Link>
           </div>
-          <div className="relative z-10 space-y-4">
-            <h2 className="text-4xl font-serif leading-tight">
-              {isLogin
-                ? "Welcome Back to Luxury."
-                : "Start Your Journey with Us."}
+          <div className="relative z-10">
+            <h2 className="text-4xl font-serif leading-tight mb-4">
+              {isLogin ? "Welcome Back." : "Join the Journey."}
             </h2>
-            <p className="text-gray-400 italic">
-              {isLogin
-                ? "আপনার পছন্দের কালেকশনগুলো ফিরে পেতে লগইন করুন।"
-                : "নতুন মেম্বার হিসেবে জয়েন করুন এবং এক্সক্লুসিভ অফার পান।"}
+            <p className="text-gray-400 font-light">
+              The finest leather, crafted for the modern individual.
             </p>
           </div>
         </div>
 
-        {/* ডান পাশ: ফর্ম সেকশন */}
-        <div className="flex-1 p-8 md:p-16 flex flex-col justify-center">
-          <div className="mb-10 text-center md:text-left">
-            <h3 className="text-3xl font-serif font-bold text-gray-900 mb-2">
-              {isLogin ? "Sign In" : "Create Account"}
-            </h3>
-            <p className="text-gray-500 text-sm">
-              {isLogin ? "Don't have an account?" : "Already have an account?"}
-              <button
-                onClick={() => setIsLogin(!isLogin)}
-                className="ml-2 text-orange-600 font-bold hover:underline"
-              >
-                {isLogin ? "Register Now" : "Login Here"}
-              </button>
-            </p>
-          </div>
+        {/* Right Side: Form */}
+        <div className="flex-1 p-8 md:p-16 flex flex-col justify-center bg-white">
+          <div className="max-w-md mx-auto w-full">
+            <div className="text-center md:text-left ">
+              <Link href={"/"} className=" md:hidden">
+                {" "}
+                <Home className="text-orange-500" />
+              </Link>
 
-          <form
-            className="space-y-5"
-            onSubmit={isLogin ? undefined : handleRegister}
-          >
-            <AnimatePresence mode="wait">
-              {!isLogin && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="relative"
+              <h3 className="text-3xl font-serif font-bold text-gray-900 mb-2">
+                {isLogin ? "Sign In" : "Register"}
+              </h3>
+              <p className="text-gray-500 text-sm mb-8">
+                {isLogin ? "New member?" : "Already have an account?"}
+                <button
+                  type="button"
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="ml-2 text-orange-600 font-bold hover:underline"
                 >
-                  <User
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                    size={18}
-                  />
-                  <input
-                    name="name" // ৩. 'name' প্রপার্টি অবশ্যই থাকতে হবে
-                    value={formData.name}
-                    onChange={handleChange}
-                    type="text"
-                    placeholder="Full Name"
-                    className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-orange-600/20 focus:border-orange-600 transition-all"
-                  />
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="relative">
-              <Mail
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                size={18}
-              />
-              <input
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                name="email"
-                placeholder="Email Address"
-                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-orange-600/20 focus:border-orange-600 transition-all"
-              />
-            </div>
-
-            <div className="relative">
-              <Lock
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-                size={18}
-              />
-              <input
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Password"
-                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-orange-600/20 focus:border-orange-600 transition-all"
-              />
-            </div>
-
-            {isLogin && (
-              <div className="text-right">
-                <button className="text-xs font-bold text-gray-400 hover:text-orange-600">
-                  Forgot Password?
+                  {isLogin ? "Create Account" : "Login Here"}
                 </button>
+              </p>
+            </div>
+
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <AnimatePresence mode="wait">
+                {!isLogin && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="relative"
+                  >
+                    <User
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                      size={18}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Full Name"
+                      required={!isLogin}
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-orange-600 transition-all"
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="relative">
+                <Mail
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={18}
+                />
+                <input
+                  type="email"
+                  placeholder="Email Address"
+                  required
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-orange-600 transition-all"
+                />
               </div>
-            )}
 
-            <button className="w-full bg-gray-900 text-white py-4 rounded-xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-orange-600 transition-all shadow-lg active:scale-95">
-              {isLogin ? "Login" : "Join Now"} <ArrowRight size={16} />
-            </button>
-          </form>
+              <div className="relative">
+                <Lock
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                  size={18}
+                />
+                <input
+                  type="password"
+                  placeholder="Password"
+                  required
+                  value={formData.password}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl outline-none focus:border-orange-600 transition-all"
+                />
+              </div>
 
-          {/* সোশ্যাল লগইন */}
-          <div className="mt-10">
-            <div className="relative mb-8 text-center">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-gray-900 text-white py-4 rounded-2xl font-bold uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-orange-600 transition-all shadow-lg active:scale-95 disabled:bg-gray-400 mt-2"
+              >
+                {loading ? "Processing..." : isLogin ? "Sign In" : "Join Now"}
+                <ArrowRight size={16} />
+              </button>
+            </form>
+
+            <div className="relative my-8">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-100"></div>
               </div>
-              <span className="relative bg-white px-4 text-xs text-gray-400 uppercase tracking-widest">
-                Or continue with
+              <span className="relative flex justify-center text-center">
+                <span className="bg-white px-4 text-[10px] text-gray-400 uppercase tracking-widest font-bold">
+                  Or
+                </span>
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <button className="flex items-center justify-center gap-3 py-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition font-bold text-xs">
-                <Chrome size={18} /> Google
-              </button>
-              <button className="flex items-center justify-center gap-3 py-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition font-bold text-xs">
-                <Github size={18} /> GitHub
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              className="w-full flex items-center justify-center gap-3 py-4 border border-gray-200 rounded-2xl hover:bg-gray-50 transition-all font-bold text-sm text-gray-700 shadow-sm active:scale-95"
+            >
+              <Chrome size={20} className="text-red-500" />
+              Continue with Google
+            </button>
           </div>
         </div>
       </motion.div>

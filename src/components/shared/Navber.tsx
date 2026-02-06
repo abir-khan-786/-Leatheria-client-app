@@ -1,13 +1,15 @@
 "use client"
 import React, { useState, useEffect } from "react"
 import Link from "next/link"
-import { ShoppingBag, Search, Menu, X, User } from "lucide-react"
+import { Search, Menu, X, User, LogIn, CardSimIcon } from "lucide-react"
+import { authClient } from "../lib/auth"
+import PremiumCart from "../cart/cart"
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
+  const [cart, setCart] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
-  // স্ক্রল করলে শ্যাডো এবং ব্যাকগ্রাউন্ড চেঞ্জ হবে
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20)
@@ -15,6 +17,12 @@ const Navbar = () => {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  const { data: session, isPending, error } = authClient.useSession()
+
+  if (isPending) {
+    return <p>Loding</p>
+  }
 
   return (
     <nav
@@ -66,7 +74,7 @@ const Navbar = () => {
               href="/dashboard"
               className="text-sm font-medium text-gray-700 hover:text-orange-600 transition"
             >
-             Dashboard
+              Dashboard
             </Link>
           </div>
 
@@ -76,20 +84,33 @@ const Navbar = () => {
               <Search size={20} />
             </button>
             <Link
-              href="/auth"
+              href={`${session?.user.email ? "/dashboard/profile" : "/auth"}`}
               className="hidden sm:block p-2 text-gray-700 hover:bg-gray-100 rounded-full transition"
             >
-              <User size={20} />
+              {session?.user.email ? <User size={20} /> : <LogIn size={20} />}
             </Link>
-            <Link
-              href="/cart"
-              className="p-2 text-gray-700 hover:bg-gray-100 rounded-full transition relative"
+
+            <button
+              onClick={() => setCart(true)}
+              className="relative p-2 text-gray-700 hover:text-black transition-colors"
             >
-              <ShoppingBag size={20} />
+              <svg
+                className="w-7 h-7"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                />
+              </svg>
               <span className="absolute top-0 right-0 bg-orange-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                2
+                3
               </span>
-            </Link>
+            </button>
 
             {/* মোবাইল মেনু বাটন */}
             <div className="md:hidden">
@@ -103,7 +124,7 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-
+      <PremiumCart isOpen={cart} setIsOpen={setCart} />
       {/* মোবাইল ড্রপডাউন মেনু */}
       {isOpen && (
         <div className="md:hidden bg-white border-t border-gray-100 animate-in slide-in-from-top duration-300">
@@ -116,21 +137,21 @@ const Navbar = () => {
             </Link>
             <Link
               href="/leather"
-              className="block px-3 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
+              className="flex  px-3 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
             >
               Leather
             </Link>
             <Link
               href="/backpacks"
-              className="block px-3 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
+              className="  flex  px-3 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
             >
-              Backpacks
+              <CardSimIcon size={20} /> Backpacks
             </Link>
             <Link
-              href="/auth"
-              className="block px-3 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
+              href="/dashboard/profile"
+              className=" flex px-3 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg"
             >
-              My Profile
+              <User size={20} /> My Profile
             </Link>
           </div>
         </div>

@@ -13,6 +13,7 @@ import {
   Home,
   SquareSquareIcon,
   User,
+  User2,
 } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
@@ -40,6 +41,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       name: "Dashboard",
       icon: <LayoutDashboard size={20} />,
       path: "/dashboard",
+    },
+    {
+      name: "Profile",
+      icon: <User2 size={20} />,
+      path: "/dashboard/profile",
     },
     {
       name: "ALl Users",

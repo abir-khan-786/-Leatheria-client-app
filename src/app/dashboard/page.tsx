@@ -123,7 +123,7 @@ const DashboardHome = () => {
 
 /* --- Helper Components --- */
 
-const StatCard = ({ label, value, change, icon, color, bg }:  any) => (
+const StatCard = ({ label, value, change, icon, color, bg }: any) => (
   <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
     <div>
       <p className="text-sm text-gray-500 font-medium">{label}</p>
@@ -150,7 +150,6 @@ const ActivityItem = ({ text, time }: { text: string; time: string }) => (
 )
 
 export default DashboardHome
-
 
 export const dashboardStats = [
   {
@@ -203,4 +202,3 @@ export const recentOrders = [
     status: "Paid",
   },
 ]
- 

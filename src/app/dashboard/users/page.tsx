@@ -1,16 +1,18 @@
 "use client"
 import React, { useEffect, useState } from "react"
- import { Trash2, ShieldAlert, ShieldCheck, Loader2 } from "lucide-react"
+import { Trash2, ShieldAlert, ShieldCheck, Loader2 } from "lucide-react"
 import axios from "axios"
 import { IUser } from "@/components/utils/types/users"
- 
+import { authClient } from "@/components/lib/auth"
+
 const AllUsers = () => {
   const [users, setUsers] = useState<IUser[]>([])
   const [loading, setLoading] = useState(true)
+  const { data: session, isPending, error } = authClient.useSession()
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/v1/user')
+      const response = await axios.get("http://localhost:5000/api/v1/user")
       setUsers(response.data.data)
     } catch (err) {
       console.error(err)
@@ -24,17 +26,29 @@ const AllUsers = () => {
   }, [])
 
   // --- ACTION: DELETE USER ---
-  const handleDelete = async (id: number) => {
-    
-  }
+  const handleDelete = async (id: number) => {}
 
   // --- ACTION: TOGGLE ADMIN ---
-  const handleToggleAdmin = async (id: number, currentRole: string) => {
-     
+  const handleToggleAdmin = async (email: string) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/api/v1/user/make-admin/${email}`,
+      )
+
+      if (response.data.success) {
+        alert("User is now an Admin!")
+        // এখানে আপনি চাইলে ইউজারের লিস্ট রিফ্রেশ করতে পারেন
+      }
+    } catch (error) {
+      console.error("Failed to make admin", error)
+      alert("Something went wrong!")
+    }
   }
 
   if (loading) return <Loader2 className="animate-spin mx-auto mt-20" />
-
+  if (isPending) {
+    return <Loader2 className="animate-spin mx-auto mt-20" />
+  }
   return (
     <div className="bg-white rounded-lg shadow border">
       <table className="w-full text-left">
@@ -62,7 +76,7 @@ const AllUsers = () => {
               <td className="p-4 text-right space-x-3">
                 {/* Toggle Admin Button */}
                 <button
-                 
+                  onClick={() => handleToggleAdmin(user.email)}
                   className={`p-2 rounded-md ${user.role === "ADMIN" ? "text-red-500 hover:bg-red-50" : "text-green-600 hover:bg-green-50"}`}
                   title={user.role === "ADMIN" ? "Remove Admin" : "Make Admin"}
                 >
@@ -74,10 +88,7 @@ const AllUsers = () => {
                 </button>
 
                 {/* Delete Button */}
-                <button
-                
-                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                >
+                <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
                   <Trash2 size={18} />
                 </button>
               </td>
