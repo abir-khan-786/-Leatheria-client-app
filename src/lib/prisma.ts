@@ -1,28 +1,17 @@
 import "dotenv/config"
-import pkg from "pg" // ডিফল্ট ইম্পোর্ট হিসেবে pkg নিন
-const { Pool } = pkg // সেখান থেকে Pool বের করে আনুন
+import pg from "pg"
 import { PrismaPg } from "@prisma/adapter-pg"
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient } from "@prisma/client" // Import from base client
 
 const connectionString = process.env.DATABASE_URL
 
-const globalForPrisma = global as unknown as {
-  prisma: PrismaClient
-  pgPool: pkg.Pool
-}
+// 1. Create the driver instance
+const pool = new pg.Pool({ connectionString })
 
-// একবারই পুল তৈরি হবে
-const pool = globalForPrisma.pgPool || new Pool({ connectionString })
+// 2. Setup the Prisma adapter
 const adapter = new PrismaPg(pool)
 
-export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({
-    adapter: adapter,
-    log: ["error"],
-  })
+// 3. Instantiate the client with the adapter
+const prisma = new PrismaClient({ adapter })
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma
-  globalForPrisma.pgPool = pool
-}
+export { prisma }

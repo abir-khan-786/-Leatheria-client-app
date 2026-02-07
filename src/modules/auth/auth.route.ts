@@ -1,6 +1,6 @@
 import express from "express"
 import { toNodeHandler } from "better-auth/node"
-import { auth } from "../../lib/auth" // পাথ ঠিক আছে কি না নিশ্চিত হয়ে নিন
+import { auth } from "../../lib/auth.js"
 
 const authRoute = express.Router()
 

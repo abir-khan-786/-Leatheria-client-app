@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { userService } from "./user.service"
+import { userService } from "./user.service.js"
 
 const getAllUsers = async (req: Request, res: Response) => {
   const data = await userService.getAllUsers()
@@ -18,30 +18,54 @@ const createUser = async (req: Request, res: Response) => {
     data,
   })
 }
-
 // userController.ts
-const makeAdmin = async (req: Request, res: Response) => {
+const updateUserRole = async (req: Request, res: Response) => {
   try {
-    const email = req.query.email as string // GET রিকোয়েস্টে কুয়েরি থেকে ইমেইল নিন
-
-    if (!email) {
-      return res.status(400).json({ message: "Email is required" })
+    // URL: /update-role/:email/:role
+    const { email, role } = req.params as { email: string; role: string }
+    if (!email || !role) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and Role are both required",
+      })
     }
 
-    const result = await userService.makeAdmin(email)
+    // শুধুমাত্র ADMIN বা USER কি না তা নিশ্চিত করা
+    const targetRole = role
+    if (targetRole !== "ADMIN" && targetRole !== "CUSTOMER") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid role. Use 'ADMIN' or 'CUSTOMER'",
+      })
+    }
+
+    // সার্ভিস কল করা
+    const result = await userService.updateUserRole(
+      email,
+      targetRole as "ADMIN" | "CUSTOMER",
+    )
 
     res.status(200).json({
       success: true,
-      message: "User promoted to Admin successfully",
+      message: `User role successfully updated to ${targetRole}`,
       data: result,
     })
-  } catch (error) {
-    res.status(500).json({ message: "Something went wrong", error })
+  } catch (error: unknown) {
+    let errorMessage = "Something went wrong"
+
+    // টাইপস্ক্রিপ্ট এরর হ্যান্ডেলিং
+    if (error instanceof Error) {
+      errorMessage = error.message
+    }
+
+    res.status(500).json({
+      success: false,
+      message: errorMessage,
+    })
   }
 }
-
 export const userController = {
   getAllUsers,
   createUser,
-  makeAdmin,
+  updateUserRole,
 }

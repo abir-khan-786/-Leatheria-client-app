@@ -1,5 +1,5 @@
 import { User } from "@prisma/client"
-import { prisma } from "../../lib/prisma"
+import { prisma } from "../../lib/prisma.js"
 
 const getAllUsers = async () => {
   const users = await prisma.user.findMany()
@@ -19,21 +19,26 @@ const createUser = async (data: User) => {
   return user
 }
 // userService.ts
-const makeAdmin = async (email: string) => {
+const updateUserRole = async (email: string, role: "ADMIN" | "CUSTOMER") => {
+  console.log(email, role)
+  // ডাটাবেসে রোল আপডেট করা
   const updatedUser = await prisma.user.update({
     where: {
       email: email,
     },
     data: {
-      role: "ADMIN", // এখানে রোল আপডেট হচ্ছে
+      role: role,
     },
   })
 
   return updatedUser
 }
 
+// ব্যবহার করার নিয়ম:
+// await updateUserRole("example@mail.com", "ADMIN"); // এডমিন বানাতে
+// await updateUserRole("example@mail.com", "USER");  // ইউজার বানাতে
 export const userService = {
   createUser,
   getAllUsers,
-  makeAdmin,
+  updateUserRole,
 }
