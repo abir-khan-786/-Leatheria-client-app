@@ -28,6 +28,7 @@ const AuthPage = () => {
     email: "",
     password: "",
   })
+  console.log(formData)
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get("callbackUrl") || "/"
   // Google Login
@@ -47,10 +48,9 @@ const AuthPage = () => {
         // --- LOGIN LOGIC ---
         const { data, error } = await authClient.signIn.email({
           email: formData.email,
-          password: formData.password,
+          password: formData.password, 
         })
-        // console.log(data?.user.email)
-
+      
         if (error) {
           toast.error(error.message || "Invalid credentials")
         } else {
@@ -65,7 +65,12 @@ const AuthPage = () => {
           email: formData.email,
           password: formData.password,
           name: formData.name,
+         
+        
         })
+        console.log(data)
+
+
 
         if (error) {
           toast.error(error.message || "Registration failed")
@@ -99,6 +104,7 @@ const AuthPage = () => {
               className="w-full h-full object-cover"
               alt="Luxury"
             />
+
             <div className="absolute inset-0 bg-gradient-to-b from-gray-900/40 to-gray-900" />
           </div>
           <div className="relative z-10">

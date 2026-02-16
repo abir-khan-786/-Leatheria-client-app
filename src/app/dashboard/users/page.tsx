@@ -1,14 +1,14 @@
 "use client"
-import React, { useEffect, useState } from "react"
-import { Trash2, ShieldAlert, ShieldCheck, Loader2 } from "lucide-react"
+import { useEffect, useState } from "react"
+import { Trash2, Loader2 } from "lucide-react"
 import axios from "axios"
 import { IUser } from "@/components/utils/types/users"
 import { authClient } from "@/components/lib/auth"
+import toast from "react-hot-toast"
 
 const AllUsers = () => {
   const [users, setUsers] = useState<IUser[]>([])
   const [loading, setLoading] = useState(true)
-  const { data: session, isPending, error } = authClient.useSession()
 
   const fetchUsers = async () => {
     try {
@@ -25,30 +25,42 @@ const AllUsers = () => {
     fetchUsers()
   }, [])
 
-  // --- ACTION: DELETE USER ---
-  const handleDelete = async (id: number) => {}
+  const handleToggleRole = async (user: any) => {
+    const { email, role } = user
 
-  // --- ACTION: TOGGLE ADMIN ---
-  const handleToggleAdmin = async (email: string) => {
+    // চেক করুন: যদি ADMIN থাকে তবে নতুন রোল হবে USER, আর না থাকলে হবে ADMIN
+    const newRole = role === "ADMIN" ? "CUSTOMER" : "ADMIN"
+    const actionText = newRole === "ADMIN" ? "ADMIN" : "CUSTOMER"
+
+    if (!window.confirm(`Are you sure you want to ${actionText} for ${email}?`))
+      return
+
+    setLoading(true)
     try {
-      const response = await axios.get(
-        `http://localhost:5000/api/v1/user/make-admin/${email}`,
+      const response = await axios.patch(
+        // ডাইনামিক ইউআরএল: এখানে ইমেইল এবং নতুন রোল দুইটাই যাচ্ছে
+        `http://localhost:5000/api/v1/user/update-role/${encodeURIComponent(email)}/${newRole}`,
       )
 
       if (response.data.success) {
-        alert("User is now an Admin!")
-        // এখানে আপনি চাইলে ইউজারের লিস্ট রিফ্রেশ করতে পারেন
+        toast.success("Always at the bottom", {
+          position: "bottom-center",
+        })
+
+        // লোকাল স্টেট আপডেট করুন যাতে রিলোড ছাড়াই বাটন চেঞ্জ হয়
+        setUsers((prev: any[]) =>
+          prev.map((u) => (u.email === email ? { ...u, role: newRole } : u)),
+        )
       }
-    } catch (error) {
-      console.error("Failed to make admin", error)
-      alert("Something went wrong!")
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Role update failed!")
+    } finally {
+      setLoading(false)
     }
   }
 
   if (loading) return <Loader2 className="animate-spin mx-auto mt-20" />
-  if (isPending) {
-    return <Loader2 className="animate-spin mx-auto mt-20" />
-  }
+
   return (
     <div className="bg-white rounded-lg shadow border">
       <table className="w-full text-left">
@@ -76,18 +88,13 @@ const AllUsers = () => {
               <td className="p-4 text-right space-x-3">
                 {/* Toggle Admin Button */}
                 <button
-                  onClick={() => handleToggleAdmin(user.email)}
+                  onClick={() => handleToggleRole(user)}
                   className={`p-2 rounded-md ${user.role === "ADMIN" ? "text-red-500 hover:bg-red-50" : "text-green-600 hover:bg-green-50"}`}
                   title={user.role === "ADMIN" ? "Remove Admin" : "Make Admin"}
                 >
-                  {user.role === "ADMIN" ? (
-                    <ShieldAlert size={18} />
-                  ) : (
-                    <ShieldCheck size={18} />
-                  )}
+                  {user.role === "ADMIN" ? "Make Customer" : "Make Admin"}
                 </button>
 
-                {/* Delete Button */}
                 <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors">
                   <Trash2 size={18} />
                 </button>
