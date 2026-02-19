@@ -3,8 +3,7 @@ import { useEffect, useState } from "react"
 import { Trash2, Loader2 } from "lucide-react"
 import axios from "axios"
 import { IUser } from "@/components/utils/types/users"
-import { authClient } from "@/components/lib/auth"
-import toast from "react-hot-toast"
+ import toast from "react-hot-toast"
 
 const AllUsers = () => {
   const [users, setUsers] = useState<IUser[]>([])
@@ -12,8 +11,9 @@ const AllUsers = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/v1/user")
+      const response = await axios.get( "http://localhost:4000/api/v1/user")
       setUsers(response.data.data)
+      console.log(response)
     } catch (err) {
       console.error(err)
     } finally {
@@ -29,8 +29,8 @@ const AllUsers = () => {
     const { email, role } = user
 
     // চেক করুন: যদি ADMIN থাকে তবে নতুন রোল হবে USER, আর না থাকলে হবে ADMIN
-    const newRole = role === "ADMIN" ? "CUSTOMER" : "ADMIN"
-    const actionText = newRole === "ADMIN" ? "ADMIN" : "CUSTOMER"
+    const newRole = role === "ADMIN" ? "USER" : "ADMIN"
+    const actionText = newRole === "ADMIN" ? "ADMIN" : "USER"
 
     if (!window.confirm(`Are you sure you want to ${actionText} for ${email}?`))
       return
@@ -39,7 +39,7 @@ const AllUsers = () => {
     try {
       const response = await axios.patch(
         // ডাইনামিক ইউআরএল: এখানে ইমেইল এবং নতুন রোল দুইটাই যাচ্ছে
-        `http://localhost:5000/api/v1/user/update-role/${encodeURIComponent(email)}/${newRole}`,
+        `https://leatheria-server-db.vercel.app/api/v1/user/update-role/${encodeURIComponent(email)}/${newRole}`,
       )
 
       if (response.data.success) {

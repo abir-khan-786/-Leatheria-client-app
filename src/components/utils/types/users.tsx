@@ -2,16 +2,17 @@
 
 export enum UserRole {
   ADMIN = "ADMIN",
-  CUSTOMER = "CUSTOMER",
+  CUSTOMER = "USER",
 }
 
 export interface IUser {
-  id: number // PostgreSQL uses Int/Number
-  name: string
-  email: string
-  role: UserRole
-  createdAt: string // Usually comes as an ISO string from JSON
-  updatedAt: string
+  id    :        string  
+  name  :        string
+  email :        string  
+  emailVerified :boolean  
+  role   :       UserRole     
+  image    : string
+  
 }
 
 // This matches your API structure: { success: true, data: [...] }

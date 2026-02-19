@@ -1,6 +1,6 @@
 import { createAuthClient } from "better-auth/react"
 
 export const authClient = createAuthClient({
-  baseURL: "http://localhost:4000", 
+  baseURL:   "http://localhost:4000", 
   basePath:'/api/v1/auth'
 })

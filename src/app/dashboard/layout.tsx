@@ -12,6 +12,8 @@ import {
   SquareSquareIcon,
   User,
   User2,
+  Database,
+  DollarSign,
 } from "lucide-react"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
@@ -23,7 +25,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   // ১. Better Auth থেকে সেশন ডেটা আনা
-  const session = axios.get("http://localhost:5000/api/v1/user")
+  const session = axios.get("http://localhost:4000/api/v1/user")
   console.log(session)
 
   // const user = session?.user
@@ -45,25 +47,36 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       name: "Dashboard",
       icon: <LayoutDashboard size={20} />,
       path: "/dashboard",
+      role: "ADMIN"
     },
-    { name: "Profile", icon: <User2 size={20} />, path: "/dashboard/profile" },
-    { name: "Orders", icon: <Package size={20} />, path: "/dashboard/orders" },
+    {
+      name: "User Dashboard",
+      icon: <Database size={20} />,
+      path: "/userDashboard",
+      role: "USER"
+    },
+    { name: "Profile", icon: <User2 size={20} />, path: "/dashboard/profile", role: "USER" },
+    { name: "Orders", icon: <Package size={20} />, path: "/dashboard/orders", role: "USER" },
+    { name: "Pyemnt", icon: <DollarSign size={20} />, path: "/dashboard/orders", role: "USER" },
 
-    { name: "All Users", icon: <User size={20} />, path: "/dashboard/users" },
+    { name: "All Users", icon: <User size={20} />, path: "/dashboard/users", role: "ADMIN" },
     {
       name: "Add Products",
       icon: <PlusIcon size={20} />,
       path: "/dashboard/addProducts",
+      role: "ADMIN"
     },
     {
       name: "Admin Panel",
       icon: <SquareSquareIcon size={20} />,
       path: "/dashboard/admin",
+      role: "ADMIN"
     },
     {
       name: "Settings",
       icon: <Settings size={20} />,
       path: "/dashboard/settings",
+      role: "ADMIN"
     },
   ]
 
@@ -85,18 +98,19 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
 
         <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
-          {menuData.map((item) => (
-            <Link
-              key={item.name}
-              href={item.path}
-              className={`flex items-center gap-4 p-3 rounded-lg transition-colors group  `}
-            >
-              <span>{item.icon}</span>
-              {isSidebarOpen && (
-                <span className="font-medium">{item.name}</span>
-              )}
-            </Link>
-          ))}
+          {menuData.map((item) => {
+            if (item.role === "USER")
+              return <Link
+                key={item.name}
+                href={item.path}
+                className={`flex items-center gap-4 p-3 rounded-lg transition-colors group  `}
+              >
+                <span>{item.icon}</span>
+                {isSidebarOpen && (
+                  <span className="font-medium">{item.name}</span>
+                )}
+              </Link>
+          })}
         </nav>
 
         {/* লগআউট বাটন */}
