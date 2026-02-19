@@ -25,7 +25,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   // ১. Better Auth থেকে সেশন ডেটা আনা
-  const session = axios.get("http://localhost:4000/api/v1/user")
+  const session = axios.get("https://leatheria-server-db.vercel.app/api/v1/user")
   console.log(session)
 
   // const user = session?.user

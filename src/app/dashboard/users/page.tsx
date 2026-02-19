@@ -3,7 +3,7 @@ import { useEffect, useState } from "react"
 import { Trash2, Loader2 } from "lucide-react"
 import axios from "axios"
 import { IUser } from "@/components/utils/types/users"
- import toast from "react-hot-toast"
+import toast from "react-hot-toast"
 
 const AllUsers = () => {
   const [users, setUsers] = useState<IUser[]>([])
@@ -11,7 +11,7 @@ const AllUsers = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get( "http://localhost:4000/api/v1/user")
+      const response = await axios.get("https://leatheria-server-db.vercel.app/api/v1/user")
       setUsers(response.data.data)
       console.log(response)
     } catch (err) {
