@@ -1,6 +1,5 @@
-{
+ {
   "compilerOptions": {
-<<<<<<< HEAD
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
@@ -34,18 +33,3 @@
   ],
   "exclude": ["node_modules"]
 }
-=======
-    "target": "ES6",
-    "module": "NodeNext",   
-    "noImplicitAny": false,       // অথবা "ESNext" 
-    "moduleResolution": "nodenext",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist",
-    "rootDir": "./src"
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
-}
->>>>>>> 546bb4e2763d383c1ebac9dd244e03da2804d2bd
